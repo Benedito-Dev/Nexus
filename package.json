@@ -1,0 +1,20 @@
+{
+  "name": "nexus",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Plataforma visual de orquestração de agentes IA com escritório 2D em pixel art",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

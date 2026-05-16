@@ -1,0 +1,142 @@
+{
+  "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "strategist",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-plan.sh",
+            "timeout": 60,
+            "statusMessage": "Validando plano do Strategist..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/update-status-after-agent.sh strategist",
+            "timeout": 30,
+            "statusMessage": "Registrando conclusão do Strategist..."
+          }
+        ]
+      },
+      {
+        "matcher": "frontend-implementer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-implementer-build.sh",
+            "timeout": 180,
+            "statusMessage": "Double-check: validando build do frontend..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-implementation.sh frontend",
+            "timeout": 180,
+            "statusMessage": "Validando build, TypeScript e ESLint do frontend..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/update-status-after-agent.sh frontend-implementer",
+            "timeout": 30,
+            "statusMessage": "Registrando conclusão do Frontend Implementer..."
+          }
+        ]
+      },
+      {
+        "matcher": "backend-implementer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-implementer-build.sh",
+            "timeout": 180,
+            "statusMessage": "Double-check: validando build do backend..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-implementation.sh backend",
+            "timeout": 180,
+            "statusMessage": "Validando build, TypeScript e ESLint do backend..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/update-status-after-agent.sh backend-implementer",
+            "timeout": 30,
+            "statusMessage": "Registrando conclusão do Backend Implementer..."
+          }
+        ]
+      },
+      {
+        "matcher": "reviewer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-review.sh",
+            "timeout": 30,
+            "statusMessage": "Validando review e score..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/update-status-after-agent.sh reviewer",
+            "timeout": 30,
+            "statusMessage": "Registrando conclusão do Reviewer..."
+          }
+        ]
+      },
+      {
+        "matcher": "documenter",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/validate-documentation.sh",
+            "timeout": 60,
+            "statusMessage": "Validando documentação e commit..."
+          },
+          {
+            "type": "command",
+            "command": "./.claude/scripts/update-status-after-agent.sh documenter",
+            "timeout": 30,
+            "statusMessage": "Registrando conclusão do Documenter..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/block-destructive-commands.sh",
+            "timeout": 10,
+            "statusMessage": "Verificando comandos destrutivos..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read file_path; if echo \"$file_path\" | grep -qE '\\.(ts|tsx)$'; then dir=\"$(dirname \"$file_path\")\"; while [ \"$dir\" != \"/\" ] && [ ! -f \"$dir/package.json\" ]; do dir=\"$(dirname \"$dir\")\"; done; if [ -f \"$dir/package.json\" ] && [ -f \"$dir/node_modules/.bin/prettier\" ]; then cd \"$dir\" && npx prettier --write \"$file_path\" 2>/dev/null || true; fi; fi; }",
+            "async": true,
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/scripts/session-setup.sh",
+            "timeout": 30,
+            "statusMessage": "Verificando ambiente do Nexus..."
+          }
+        ]
+      }
+    ]
+  }
+}
