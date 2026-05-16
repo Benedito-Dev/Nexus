@@ -2,3 +2,6 @@ packages:
   - frontend
   - backend
   - shared
+allowBuilds:
+  '@biomejs/biome': true
+  esbuild: true

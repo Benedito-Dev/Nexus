@@ -48,22 +48,49 @@ Nota: Estrategista e Arquiteto podem se sobrepor — observar em uso real, consi
 - Motivo: só 3 workspaces — aninhar atrapalha navegação e paths
 - Se crescer pra múltiplos apps/packages: reorganizar depois (custo baixo)
 
+### 2026-05-16 — Frontend usa Canvas API (stack definitiva — Task 2)
+- `nexus-contexto.md` seção 8.1 especifica Canvas API para o escritório. Documento é lei.
+- Task 1 propôs DOM + CSS baseado no protótipo — rejeitado pelo usuário. Task 2 corrige isso.
+- Sprites pixel art via `ctx.fillRect()` usando o mesmo template string do protótipo (12×18px, chars H/S/T/A/P/B)
+- Game loop: `requestAnimationFrame` + delta time + cleanup function no useEffect
+- `ctx.imageSmoothingEnabled = false` OBRIGATÓRIO imediatamente após `getContext('2d')`
+- `imageRendering: pixelated` no elemento `<canvas>` via CSS
+- AgentStateManager em `useRef` — estado mutável fora do React state, nunca causa re-render a 60fps
+- Tailwind APENAS para chrome (Topbar, ChatPanel). Canvas é renderização programática.
+- AgentPopover é a única div DOM posicionada sobre o canvas (z-index acima)
+- Fase 0: agentes como retângulos coloridos (chatColor). Sprites completos são Fase 1.
+- Budget performance: <5ms por frame com 7 agentes (câmera fixa, sem culling necessário)
+
+## Protótipo de Referência Visual
+
+- `Nexus Desing/nexus-data.jsx` — dados dos 7 agentes (nome, posição, paleta, bio), layout do escritório
+- `Nexus Desing/nexus-sprite.jsx` — gerador de sprites CSS box-shadow com cache de paleta
+- `Nexus Desing/nexus-office.jsx` — componentes DOM do escritório (Room, DeskStation, AgentSprite, Popover)
+- `Nexus Desing/nexus-chat.jsx` — chat lateral (referência para ChatPanel)
+- `Nexus Desing/nexus-app.jsx` — App raiz com cenas (idle/executing/meeting)
+- `Nexus Desing/nexus.css` — estilos completos do protótipo
+- ATENÇÃO: protótipo é JSX sem TypeScript, sem módulos ES, sem Vite. Migrar, não copiar.
+
 ## Riscos Conhecidos
 
 - Latência LLM matando imersão (3-30s) → streaming + animações
 - Custo de 4-6 agentes por tarefa → BYOK + estimativa + cap
 - Complexidade do orquestrador → workflow linear primeiro
-- Canvas pesado → budget 60fps desde o início
+- box-shadow longo por sprite → mitigado com cache de paleta (já implementado no protótipo)
 - Estrategista vs Arquiteto sobrepostos → observar uso real
 - Desincronização frontend/backend → monorepo + shared/ + TS estrito
 
 ## Patterns de Plan que Funcionam
 
-(Preencher após primeiras tasks)
+- Examinar `Nexus Desing/` antes de planejar qualquer feature visual — protótipo tem dados úteis (paletas, posições, templates)
+- Fase 0: não implementar sprites/animações completos — agentes como retângulos coloridos, estrutura do canvas funcionando
+- Canvas API e game loop: sempre verificar que cleanup function é retornada no useEffect
+- `nexus-contexto.md` é lei — se proposta de plano contrariar seção 8.1, o plano está errado
+- Task 1 do frontend foi rejeitada por propor DOM + CSS. Task 2 corrige com Canvas API.
 
 ## Bounded Contexts
 
 - `shared/` → consumido por frontend E backend (nunca modificar sem atualizar os dois lados)
-- `frontend/` → Canvas + React + Socket.io client
+- `frontend/` → Canvas API (escritório) + React + Tailwind (chrome) + Socket.io client
 - `backend/` → Fastify + Socket.io server + agentes + LLM providers
 - Fase 4+: Prisma + PostgreSQL entram no backend
